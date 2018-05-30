@@ -1,0 +1,10 @@
+comparisons
+
+bell.k     http://inferno.bell-labs.com/cm/cs/who/bwk/interps/pap.html
+comp.k     http://shootout.alioth.debian.org
+
+examples
+
+cs50.k     http://www.cs50.net/psets harvard cs course
+game.k     knight's tour(depth) sudoku(breadth) ..
+greplin.k  http://challenge.greplin.com/ programming challenge

@@ -1,0 +1,50 @@
+TRILLION ROW BENCHMARK nyse TAQ (ftp://ftp.nyxdata.com/TAQ)
+
+DATA: 65 billion trades and 1.1 trillion quotes. 5000 days. 100TB raw data.
+
+MACHINE: 16core 256GB 
+
+SOFTWARE: date partition, sym cluster index. all queries in RAM. (top 100 syms is 25% of data)
+
+ q(k4) k5
+ vertical, big3accel, hadoop/impala, greenplum   (COLUMN STORE)
+ postgres, big3rdbms, mongodb, spark             (ROW/OBJECT STORE)
+
+QUERIES  Q1,Q2,Q3 aggregations on top 100 symbols S.  Q4 asof-join regnms (price<current bid).
+
+given date d:
+
+k
+ S:100#>count'trade d  / top 100 symbols
+ Q1 {select last bid             from quote[d]x}'S
+ Q2 {select max price by ex      from trade[d]x}'S
+ Q3 {select avg size  by `h$time from trade[d]x}'S
+ Q4 select time,price,bid from(trade[d]`QQQ;quote[d]`QQQ)where price<bid
+
+q
+ S:100#first flip idesc select count i by sym from trade where date=d
+ Q1 select last bid  by sym         from quote where date=d,sym in S
+ Q2 select max price by sym,ex      from trade where date=d,sym in S
+ Q3 select avg size  by sym,time.hh from trade where date=d,sym in S
+ Q4 select time,price,bid from aj[`time;select time,price from trade where date=d,sym=`QQQ;select time,bid from quote where date=d,sym=`QQQ] where price<bid
+
+sql
+ create table S(sym char(4));insert into S select sym from trade where date=d group by sym order by count(*) desc fetch first 100 rows only
+ Q1 select sym,last(bid) from quote natural join S where date=d group by sym;
+ Q2 select sym,ex,max(price) from trade natural join S where date=d group by sym,ex;
+ Q3 select sym,hour(time),avg(size) from trade natural join S where date=d group by sym,hour(time);
+ Q4 select * from (select time,price,sym from trade where date=d and sym=`QQQ) t
+    left outer join (select time,bid,sym from quote where date=d and sym=`QQQ) q
+    on q.time=(select max(time) from q where time<=t.time and sym=`QQQ) where price<bid;
+
+mongo
+db.trade.aggregate([{$group:{_id:{s:"$s"},n:{"$sum":1}}},{$sort:{n:-1}},{$limit:100},{$project:{_id:0,s:"$_id.s"}}]).toArray().map(function(x){return x.s;})
+Q1 S.map(function(x){return db.quote.aggregate([{"$match":{date:d,sym:x}},{"$sort":{time:1}},{"$group":{"_id":{sym:"$sym"},bid:{"$last":"$bid"}}}]).toArray()})
+Q2 S.map(function(x){return db.trade.aggregate([{"$match":{date:d,sym:x}},{"$group":{"_id":{sym:"$sym",ex:"$ex"},price:{"$max":"$price"}}}]).toArray()})
+Q3 S.map(function(x){return db.trade.aggregate([{"$match":{date:d,sym:x}},{"$group":{"_id":{sym:"$sym",hour:{"$substr":["$time",0,2]}},size:{"$avg":"$size"}}}]).toArray()})
+Q4 ?
+
+duplicate these timings using:
+http://kparc.com/q4/gen.k
+http://kparc.com/q4/gen.q
+

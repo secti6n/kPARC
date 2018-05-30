@@ -1,0 +1,28 @@
+nyse taq 2007.01.01-2015.01.01 (2000 days)
+
+disk space for trillion rows:
+k5  22TB (when we have compressed maybe about 5TB)
+q3  24TB (5TB compressed)
+
+7000 syms (S: top 100 syms)
+
+ 960 billion quotes (S has 170 billion. QQQ has 6 billion.)
+  48 billion trades (S has 12 billion. QQQ has 80 million.)
+
+Q1:{select last bid  by sym         from quote where date=x,sym in S}peach D
+Q2:{select max price by sym,ex      from trade where date=x,sym in S}peach D
+Q3:{select avg size  by sym,time.hh from trade where date=x,sym in S}peach D
+Q4:{select time,price,bid from aj[`time;select from trade where date=x,sym=`QQQ;select from quote where sym=`QQQ]where price<bid}peach D
+
+Q2 and Q3 are simple sql groupby aggregations. each has to read 2 or 3 columns in 12 billion rows.
+Q1 (last) only requires reading the length of the sym section and extracting the last bid. e.g. 200 pages per day.
+
+k&q both scale nicely with additional cores and hyperthreads.
+
+e.g. on our 16 core machine:
+
+16 days runs only 2 times slower than 1 day.
+32 days runs only 3 times slower than 1 day.
+
+all tested software has indices except impala/parquet.
+

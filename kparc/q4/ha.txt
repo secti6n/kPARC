@@ -1,0 +1,37 @@
+(ha)doop   (from the OED)
+
+noun/verb: fool. from geoffrey chaucer "treatise on database"(1378).
+past participle/adjective dooped. pronounced doop-ed. rhymes with stupid.
+from old french: doupe (unreliable. expensive to set up and maintain.)
+
+
+i recently bumped into cloudera's chief technologist. (i live close to stanford.)
+asked him if they had put indices into impala yet. he said no. they do table scans.
+
+nice! so on one trillion quotes:
+
+select last bid from quote where sym=`IBM
+
+takes 450 seconds (impala with 100 big memory machines on AWS. all data cached in ram.)
+versus 25 microseconds (k on one machine).
+
+more than 7 orders of magnitude with 10-100 times the cost. 
+
+hadoop is also not great with table scans, e.g.
+
+select avg bid from quote
+
+takes  450 seconds (impala on 100 big memory machines)
+versus 120 seconds (k on one machine. 12 seconds on 10 machines.)
+
+some quotes on hadoop: (unknown provenance?)
+
+"maximize latency while simultaneously minimizing throughput"
+"the corba of distributed database"
+"charity for amazon"
+
+further reading:
+
+http://kparc.com/q4/hadoop.txt
+http://en.wikipedia.org/wiki/Fallacies_of_distributed_computing
+

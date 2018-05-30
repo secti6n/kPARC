@@ -1,0 +1,46 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252"></head><body><pre>
+<a href="http://kparc.com/k.txt">k</a> programming language (atom list dict) <a href="http://kx.com/">kx.com</a>
+<a href="http://kparc.com/d.txt">kdb</a> universal database (store anything. compute anything. fast.)
+
+<a href="http://kparc.com/z">examples</a> <a href="http://kparc.com/advent">adventofcode</a> 
+
+$k
+ s:2            / atom(scalar)
+ v:2 3 4        / list(vector)
+ s+v
+4 5 6
+ m:(v;3 4 5)    / list(matrix)
+ +/m            / + over
+5 7 9
+ +/'m           / + over each
+9 12
+ v 1            / apply(index)
+3
+
+ d:`a`b!2 3     / dictionary
+ d`b            / apply(assoc)
+3
+ d+d
+`a`b!4 6
+
+ f:{x+2}        / function
+ f 1            / apply(call)
+3
+ f v
+4 5 6
+..
+
+k is similar to python and javascript but does more with less, e.g.
+trillion row databases <a href="http://kparc.com/q4">q4</a> and self-contained graphics <a href="http://kparc.com/edit.k">edit.k</a>
+
+<a href="http://kparc.com/lisp.txt">lisp and apl</a>
+<a href="http://www.jsoftware.com/papers/tot.htm">iverson: turing award paper</a>
+<a href="http://www.jsoftware.com/papers/perlis77.htm">perlis: lyrical programming</a>
+
+</pre>
+
+
+
+
+</body></html>

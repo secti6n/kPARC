@@ -1,0 +1,23 @@
+hadoop(impala) on 1 and 16 average days: (e.g. 2013.04.03 610Million quotes. 29Million trades.)
+
+hadoop     Q1      Q2      Q3      Q4
+ 1day   45000    2250    1880     DNF  / 640Million rows
+16day 1000000   18000   27000     DNF  /  10Billion rows
+
+k
+ 1day:      1      35      40       8
+16day:     10      60      70      17    
+
+http://en.wikipedia.org/wiki/Fallacies_of_distributed_computing
+
+it would take 1000 machines (expensive and unreliable) for hadoop (e.g. cloudera/impala) 
+to perform trillion row tick database queries (Q2&Q3) as fast as k does on a single machine.
+
+there is no number of hadoop machines that can do point selects(e.g. Q1) as fast as k.
+
+since minimum hadoop overhead is >100,000 microseconds.
+
+k point selects are roughly 20 microseconds. (1 microsecond for small (<1TB) databases)
+
+impala can't do timeseries merge(asof join) like Q4
+

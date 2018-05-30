@@ -1,0 +1,116 @@
+kdb    
+
+Table is list of dicts stored by column, e.g. 
+
+ trade:+`time`ex`price`size!(09:30 09:31;"BA";8 9;4 3)
+ ebook:`ex key trade
+
+ run million+ statements per second per core, e.g.
+
+  trade,:(time;ex;price;size)  / insert
+  ebook,:(ex;time;price;size)  / upsert
+  select last time from trade  / select
+  ..
+
+ query billion+ rows per second per core, e.g. 
+
+  select avg size from trade
+  select time,price,size from trade where 0<deltas price  / upticks
+  select time,price,bid from(trade;quote)where price<bid  / asof join
+  select size avg price by time.minute from trade         / minute vwaps
+  select last time,last price by ex from trade            / exchange close
+  ..
+
+Aggregates
+
+ count first last sum min max avg var dev(weightavg covariance correlation)
+
+Query
+
+select A [by B] from T [where C]
+
+ T: list of tables (outer left joins)
+ C: list of boolean expressions, e.g. e="P"
+ B: dict of uniform expressions, e.g. h:`h$t
+ A: dict of expressions, e.g. s:sum s,p:avg p
+ 
+A, B and C expressions execute on entire columns
+B and C expressions are uniform, e.g. p>10  or `h$t
+A are all aggregation (e.g. sum s) or all uniform.
+C expressions cascade so put best constraint first.
+the result is a table (or keyed table if B).
+
+exec is like select except it allows A and B to be single expressions.
+this is handy for extracting data from tables, e.g.
+
+ exec s from t                     / list
+ exec sum s from t                 / atom
+ exec sum s by e from t            / map of atoms
+ exec sum s,avg p by e from t      / map of dicts
+ exec by e from t                  / map of tables
+
+Build 
+
+DB's are built from existing files and/or new events.
+DB's can have a hdb(historical: trillions/ssd) and an rdb(realtime: billions/ram).
+hDB (shards up to 128TB) can store anything in any arrangement and load instantly.
+
+Insert Upsert Join  are 1million(single) to 100million(bulk) per second.
+
+t is tuple. T is table.  U is k key T  (short for (k#/:T)!k_/:T)
+
+T,:t  / insert: short for T,:,t        bulk:  T,:T
+U,:t  / upsert: short for U[k#t]:k_t   bulk:  U,:U
+t,:U  / join:   short for t,U k#t      bulk:  T,\:U
+
+ETL delim&fixed text file loaders
+
+T:+N!(type;delim)0:file / ("tccii";,",")0:"tj.csv" / "tj.csv"0:3#t`JNJ
+T:+N!(type;width)0:file / ("tcn cii  ";9 1 6 10 4 9 9 2 20)0:"/a/tq0/t"
+
+e.g. use http://kparc.com/tq0.zip(source) and http://kparc.com/tq.k(loader)
+
+$k tq  # load database
+ t:5#t`CSCO     / first 5 CSCO trades
+ q:9#q`CSCO     / first 9 CSCO quotes 
+
+datetime: mdhrstuv (month day hour minute second milli micro nano)
+ duration(12:34:56) and absolute(2003.04.05D12:34:56)
+ 2003.04.05+2m         / date + months
+ 2003.04.05+12:34:56   / date + seconds
+
+rdb: 
+feedhandlers log to ssd and msg to k(>100MB per sec).
+
+hdb:
+kDB is for db's of any size. especially big ones. 1TB and up. very fast. very powerful.
+most kx customers are from 10TB to 1PB.
+each k process maps up to 128TB so an online PB database requires 8 k processes.
+each hdb process can serve a million queries per second or query a billion records per second.
+each rdb process can process 100MB per second (one million transactions per second).
+
+notes:
+
+use 'where' cascade for correlated subqueries, e.g.  e="P",p>avg p
+foreignkey equijoins builtin. (e.g. all tpc-h joins disappear).
+k is easier and more powerful than sql. in sql the asjoins are practically 
+impossible and even simple set theoretic queries can be awkward, e.g.
+
+compare tpc-h query 8:  [BRAZIL STEEL market share in the AMERICAs by year] 
+
+in k:
+
+ select revenue avg supplier.nation=`BRAZIL by order.date.year from lineitem
+  where order.customer.nation.region=`AMERICA, order.date.year in 1995 1996, part.type=`STEEL
+
+in sql:
+
+ select o_year,sum(case when nation = 'BRAZIL' then revenue else 0 end)/sum(revenue) as mkt_share
+ from(select year(o_orderdate) as o_year,revenue,n2.n_name as nation
+  from part,supplier,lineitem,orders,customer,nation n1,nation n2,region
+  where p_partkey = l_partkey and s_suppkey = l_suppkey and l_orderkey = o_orderkey
+   and o_custkey = c_custkey and c_nationkey = n1.n_nationkey
+   and n1.n_regionkey = r_regionkey and r_name = 'AMERICA' and s_nationkey = n2.n_nationkey
+   and o_orderdate between date('1995-01-01') and date('1996-12-31') and p_type = 'STEEL') 
+  as all_nations group by o_year order by o_year;
+

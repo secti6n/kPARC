@@ -1,0 +1,16 @@
+Index of /z
+• Parent Directory
+• a.txt
+• a1.csv
+• anag.k
+• bell.k
+• comp.k
+• cs50.k
+• fun.k
+• game.k
+• greplin.k
+• mm.k
+• puz.k
+• w.k
+
+Apache Server at kparc.com Port 80

@@ -1,0 +1,50 @@
+[DISABLED: redoing the window manager]
+
+$z [f]
+
+f1.. / launch from app.txt
+f12  / launch from prompt
+f11  / fullscreen
+esc  / back up through apps
+^w   / close window
+^q   / quit
+
+from debug: tab to switch focus window(0 1 ..)
+
+DRAW (v&w are row&col;c is color:0...RGBW)
+1'(v;t;c)   / text (-1 for blend)
+2'(v;w;c)   / rect (-2 for blend)
+2'(v;argb)  / image
+2'(v;w;s;d) / scroll
+
+APPS (F is fixed font xy; W is window)
+z::1'(0;"world") / draw
+y::F*0 2         / cursor
+x::"hello"       / title
+
+EVENT (override with zf)
+lx i / leftright
+ux i / updown
+hx I / homeend    (^updown)
+px I / pageupdown (^leftright)
+wx I / wheelupdown(^leftright)
+
+mx V / mouseclick
+mm V / mousemove
+mk V / mouseselect
+
+kx k / key  
+kb   / back 
+kr   / return 
+kt   / tab
+f[1-9] func key
+c[a-z] ctrl key(cc cx cv cf cg co cs cz ..)
+
+OTHER
+C:0'C / prompt(esc)
+
+  9't / cc(set clip)
+t:9'` / cv(get clip)
+
+j 9'a / parens, e.g.  (4)0'"{()}\"\"//asdf" is 0 3
+n 9'a / syntax, e.g. ".c"0'"{()}\"\"//asdf" is 000011222222
